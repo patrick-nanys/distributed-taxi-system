@@ -16,7 +16,15 @@
 	if (WCC < 10000) {
         ?client_called_at(X,Y)[source(C)];
         .send(WT, tell, client_waiting_at(C,X,Y));
+        .print("Winner of client ", C, " is ", WT);
         .abolish(client_cost(_,C));
  	}.
     // TODO else
 
++reject(C,X,Y) <-
+    .broadcast(tell, client_called_at(C,X,Y));
+    .abolish(reject(C,X,Y)).
+
++client_delivered(C) <-
+    .abolish(client_called_at(X,Y));
+    .abolish(client_delivered(C)).

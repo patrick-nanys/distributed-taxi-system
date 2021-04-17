@@ -37,17 +37,16 @@ public class DistributedTaxiEnvironment extends TimeSteppedEnvironment {
         }
 
         private static Literal gotoLiteral(Location loc) {
-            return Literal.parseLiteral(String.format("goto(%d,%d)", loc.x, loc.y));
+            return Literal.parseLiteral(String.format("go_to(%d,%d)", loc.x, loc.y));
         }
     }
-
 
     @Override
     public void init(String[] args) {
         super.init(new String[] { "1000" });
 //        TODO took this out
 //        setOverActionsPolicy(OverActionsPolicy.ignoreSecond);
-
+        setSleep(1000);
         int numClient = Integer.parseInt(args[0]);
         int numTaxi = Integer.parseInt(args[1]);
 
@@ -85,10 +84,10 @@ public class DistributedTaxiEnvironment extends TimeSteppedEnvironment {
 
         Literal prevPositionLiteral = Literals.atLiteral(prevAgentPosition);
         if(prevPositionLiteral != null) {
-            logger.info(String.format("Removed at percept for agent: %s", agentName));
+//            logger.info(String.format("Removed at percept for agent: %s", agentName));
             removePercept(agentName, prevPositionLiteral);
         }
-        logger.info(String.format("Added at percept for agent: %s", agentName));
+//        logger.info(String.format("Added at percept for agent: %s", agentName));
         addPercept(agentName, Literals.atLiteral(agentPosition));
     }
 

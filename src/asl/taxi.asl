@@ -31,13 +31,14 @@ not_busy.
 
 +client_called_at(C,X,Y)[source(S)] : not_busy <-
     ?at(X0,Y0);
-    .print(here);
-    .send(S,tell,client_cost(math.abs(X-X0)+math.abs(Y-Y0),C)).
+    .send(S,tell,client_cost(math.abs(X-X0)+math.abs(Y-Y0),C));
+    .abolish(client_called_at(C,X,Y)).
 
 +client_called_at(C,X,Y)[source(S)] : busy <-
-    .send(S,tell,client_cost(10000,C)).
+    .send(S,tell,client_cost(10000,C));
+    .abolish(client_called_at(C,X,Y)).
 
-+client_waiting_at(C,X,Y) <-
++client_waiting_at(C,X,Y) : not_busy <-
     +busy;
     .abolish(not_busy);
     ?at(X0,Y0);
@@ -46,10 +47,20 @@ not_busy.
     }elif(Y0 > Y) {
         !at(X,Y+1);
     }
-    .send(C,tell,where_to).
+    .send(C,tell,where_to);
+    .abolish(client_waiting_at(C,X,Y)).
+
++client_waiting_at(C,X,Y)[source(S)] : busy <-
+    .print("Rejecting ", C);
+    .send(S,tell,reject(C,X,Y));
+    .abolish(client_waiting_at(C,X,Y)).
 
 +take_client_to(X,Y)[source(C)] <-
     .kill_agent(C);
+    .print("Picked up ", C);
     !at(X,Y);
+    .print(C, " arrived to destination!");
+    .send("broker", tell, client_delivered(C));
     +not_busy;
-    .abolish(busy).
+    .abolish(busy);
+    .abolish(take_client_to(X,Y)).

@@ -1,14 +1,16 @@
 MAS distributed_taxi_system {
 	infrastructure: Centralised
-	environment: DistributedTaxiEnvironment(2, 2)
+	environment: DistributedTaxiEnvironment(5, 5)
 	// parameters:
 	//      1. number of clients
 	//      2. number of taxis
 
+    executionControl: jason.control.ExecutionControl
+
 	agents:
 		broker;
-		client #2;
-		taxi #2;
+		client #5;
+		taxi #5;
 
 	aslSourcePath: "src/asl";
 }
