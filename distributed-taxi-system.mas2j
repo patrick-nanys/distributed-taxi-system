@@ -1,0 +1,14 @@
+MAS distributed-taxi-system {
+	infrastructure: Centralised
+	environment: DistributedTaxiEnvironment(40, 3)
+	// parameters:
+	//      1. number of clients
+	//      2. number of taxis
+
+	agents:
+		broker;
+		client #40;
+		taxi #3;
+
+	aslSourcePath: "src/asl";
+}
