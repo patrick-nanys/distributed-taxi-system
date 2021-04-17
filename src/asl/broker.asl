@@ -7,20 +7,16 @@
 
 /* Plans */
 
-+client_called_at(X,Y)[source(S)] <-
-	.broadcast(tell, client_called_at(X,Y));
-	+searching_for_taxi(S).
++client_called_at(X,Y)[source(C)] <-
+	.broadcast(tell, client_called_at(C,X,Y));
 	
-+client_cost(_) : taxi_num(TN) & .count(client_cost(_)[source(_)], N) & N==TN <-
-	.findall(offer(CC,T),client_cost(CC)[source(T)],L);
++client_cost(_,C) : taxi_num(TN) & .count(client_cost(_,C)[source(_)], N) & N==TN <-
+	.findall(offer(CC,T),client_cost(CC,C)[source(T)],L);
 	.min(L, offer(WCC, WT));
 	if (WCC < 10000) {
-	    ?searching_for_taxi(S);
-	    .send(WT, tell, client_won(S));
-        ?cashier_at(WA,X,Y);
-        .send(S, tell, cashier_at(WA,X,Y));
-        .abolish(searching_cashier(_));
-        .abolish(custcount(_)).
-	}
-
+        ?client_called_at(X,Y)[source(C)];
+        .send(WT, tell, client_waiting_at(C,X,Y));
+        .abolish(client_cost(_,C)).
+ 	}
+    // TODO else
 

@@ -6,17 +6,47 @@
 
 /* Plans */
 
++!at(X,Y) : at(X,Y) <- true.
 
-+customer_arrive[source(S)] : custcount(X) <- 
- 	.send(S, tell, custcount(X));
- 	.abolish(customer_arrive).
- 	
- +you_win : custcount(X) <-
- 		+custcount(X+1);
- 		.abolish(custcount(X));
- 		.abolish(you_win).
- 		
-+decreaseCount : custcount(X) <-
-		+custcount(X-1);
-		.abolish(custcount(X));
-		.abolish(decreaseCount).
++!at(X,Y) : at(X0,Y0) <-
+    if(X0 < X) {
+        move(right);
+    }
+    elif(X0 > X) {
+        move(left);
+    }
+    elif(Y0 < Y) {
+        move(down);
+    }
+    elif(Y0 > Y) {
+        move(up);
+    };
+    .abolish(at(X0,Y0));
+    .perceive;
+    !at(X,Y).
+
+-!at(X,Y) <- !at(X,Y).
+
++client_called_at(C,X,Y)[source(S)] : not_busy <-
+    ?at(X0,Y0);
+    .send(S,tell,client_cost(math.abs(X-X0)+math.abs(Y-Y0),C).
+
++client_called_at(C,X,Y)[source(S)] : busy <-
+    .send(S,tell,client_cost(10000,C)).
+
++client_waiting_at(C,X,Y) <-
+    +busy;
+    .abolish(not_busy);
+    ?at(X0,Y0);
+    if(Y0 < Y) {
+        !at(X,Y-1);
+    }elif(Y0 > Y) {
+        !at(X,Y+1);
+    }
+    .send(C,tell,where_to).
+
++take_client_to(X,Y)[source(C)] <-
+    .kill_agent(C);
+    !at(X,Y);
+    +not_busy;
+    .abolish(busy).
