@@ -1,4 +1,3 @@
-package java;
 
 import jason.environment.grid.GridWorldModel;
 import jason.environment.grid.Location;
@@ -12,6 +11,7 @@ public class DistributedTaxiModel extends GridWorldModel {
     public static final int GSize = 31;
     private int numTaxi;
     private int numClient;
+    private HashMap<Integer, Location> gotoLocations = new HashMap<Integer, Location>();
     private HashMap<Integer, Location> prevLocations = new HashMap<Integer, Location>();
 
     protected DistributedTaxiModel(int numTaxi, int numClient) {
@@ -23,6 +23,9 @@ public class DistributedTaxiModel extends GridWorldModel {
         }
         // set broker position
         setAgPos(this.numTaxi + this.numClient, 0, 0);
+        for(int i = this.numTaxi; i < this.numTaxi + this.numClient; i++) {
+            gotoLocations.put(i, getFreePos());
+        }
     }
 
     enum Direction {
@@ -67,5 +70,9 @@ public class DistributedTaxiModel extends GridWorldModel {
 
     public Location getPrevAgentLocation(int agent_id) {
         return prevLocations.get(agent_id);
+    }
+
+    public Location getGotoLocation(int agent_id) {
+        return gotoLocations.get(agent_id);
     }
 }

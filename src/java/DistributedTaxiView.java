@@ -1,4 +1,4 @@
-package java;
+
 
 import jason.environment.grid.GridWorldModel;
 import jason.environment.grid.GridWorldView;

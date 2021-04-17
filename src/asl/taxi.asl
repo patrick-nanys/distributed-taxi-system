@@ -2,6 +2,8 @@
 
 /* Initial beliefs and rules */
 
+not_busy.
+
 /* Initial goals */
 
 /* Plans */
@@ -29,7 +31,8 @@
 
 +client_called_at(C,X,Y)[source(S)] : not_busy <-
     ?at(X0,Y0);
-    .send(S,tell,client_cost(math.abs(X-X0)+math.abs(Y-Y0),C).
+    .print(here);
+    .send(S,tell,client_cost(math.abs(X-X0)+math.abs(Y-Y0),C)).
 
 +client_called_at(C,X,Y)[source(S)] : busy <-
     .send(S,tell,client_cost(10000,C)).

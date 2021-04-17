@@ -1,4 +1,4 @@
-package java;
+
 
 import jason.asSyntax.ASSyntax;
 import jason.asSyntax.Literal;
@@ -11,7 +11,7 @@ import java.util.HashMap;
 import java.util.logging.Logger;
 
 public class DistributedTaxiEnvironment extends TimeSteppedEnvironment {
-    private Logger logger = Logger.getLogger("naatho_ier.mas2j."+SmartShoppingEnvironment.class.getName());
+    private static Logger logger = Logger.getLogger("distributed_taxi_system.mas2j."+DistributedTaxiEnvironment.class.getName());
     private HashMap<String, Integer> agentIds = new HashMap<String, Integer>();
 
 
@@ -27,9 +27,18 @@ public class DistributedTaxiEnvironment extends TimeSteppedEnvironment {
         static final Term MOVE_LEFT = Literal.parseLiteral("move(left)");
 
         private static Literal atLiteral(Location loc) {
+            if(loc == null)
+                return null;
             return Literal.parseLiteral(String.format("at(%d,%d)", loc.x, loc.y));
         }
 
+        private static Literal taxiNumLiteral(int taxiNum) {
+            return Literal.parseLiteral(String.format("taxi_num(%d)", taxiNum));
+        }
+
+        private static Literal gotoLiteral(Location loc) {
+            return Literal.parseLiteral(String.format("goto(%d,%d)", loc.x, loc.y));
+        }
     }
 
 
@@ -48,18 +57,22 @@ public class DistributedTaxiEnvironment extends TimeSteppedEnvironment {
         int counter = 0;
         for (int i = 0; i < numTaxi; i++) {
             String agName = "taxi" + (i+1);
-            agentIds.put(agName, counter++);
+            agentIds.put(agName, counter);
             updatePercepts(agName);
+            counter++;
         }
 
         for (int i = 0; i < numClient; i++) {
             String agName = "client" + (i+1);
-            agentIds.put(agName, counter++);
+            agentIds.put(agName, counter);
+            addPercept(agName, Literals.gotoLiteral(model.getGotoLocation(counter)));
             updatePercepts(agName);
+            counter++;
         }
 
         String agName = "broker";
         agentIds.put(agName, counter);
+        addPercept(agName, Literals.taxiNumLiteral(model.getNumTaxi()));
         updatePercepts(agName);
 
     }
@@ -70,7 +83,12 @@ public class DistributedTaxiEnvironment extends TimeSteppedEnvironment {
         Location prevAgentPosition = model.getPrevAgentLocation(agentId);
         Location agentPosition = model.getAgPos(agentId);
 
-        removePercept(agentName, Literals.atLiteral(prevAgentPosition));
+        Literal prevPositionLiteral = Literals.atLiteral(prevAgentPosition);
+        if(prevPositionLiteral != null) {
+            logger.info(String.format("Removed at percept for agent: %s", agentName));
+            removePercept(agentName, prevPositionLiteral);
+        }
+        logger.info(String.format("Added at percept for agent: %s", agentName));
         addPercept(agentName, Literals.atLiteral(agentPosition));
     }
 
