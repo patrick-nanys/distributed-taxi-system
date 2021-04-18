@@ -5,7 +5,7 @@ MAS distributed_taxi_system {
 	//      1. number of clients
 	//      2. number of taxis
 
-    executionControl: jason.control.ExecutionControl
+    //executionControl: jason.control.ExecutionControlGUI
 
 	agents:
 		broker;

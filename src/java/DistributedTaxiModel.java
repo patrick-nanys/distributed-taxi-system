@@ -1,4 +1,3 @@
-
 import jason.environment.grid.GridWorldModel;
 import jason.environment.grid.Location;
 
@@ -7,8 +6,8 @@ import java.util.Random;
 import java.util.logging.Logger;
 
 public class DistributedTaxiModel extends GridWorldModel {
-    public static final int CUST  = 16;
-    public static final int GSize = 31;
+//    public static final int CUST  = 16;
+    public static final int GSize = 30;
     private int numTaxi;
     private int numClient;
     private HashMap<Integer, Location> gotoLocations = new HashMap<Integer, Location>();
@@ -18,14 +17,22 @@ public class DistributedTaxiModel extends GridWorldModel {
         super(GSize, GSize, 44);
         this.numTaxi = numTaxi;
         this.numClient = numClient;
-        for(int i = 0; i < this.numTaxi + this.numClient; i++) {
+
+        // set broker position
+        setAgPos(0, 0, 0);
+
+        // set taxi and client positions
+        for(int i = 1; i < 1 + this.numTaxi + this.numClient; i++) {
             setAgPos(i, getFreePos());
         }
-        // set broker position
-        setAgPos(this.numTaxi + this.numClient, 0, 0);
-        for(int i = this.numTaxi; i < this.numTaxi + this.numClient; i++) {
+        // set go to positions
+        for(int i = 1 + this.numTaxi; i < 1 + this.numTaxi + this.numClient; i++) {
             gotoLocations.put(i, getFreePos());
         }
+    }
+
+    public void placeAgent(int agentId) {
+        setAgPos(agentId, getFreePos());
     }
 
     enum Direction {
@@ -57,7 +64,7 @@ public class DistributedTaxiModel extends GridWorldModel {
                 newLoc = new Location(location.x + 1, location.y);
                 break;
         }
-        if(newLoc == null || !inGrid(newLoc) || !isFreeOfObstacle(newLoc)) {
+        if(newLoc == null || !inGrid(newLoc) || !isFree(newLoc)) {
             return false;
         }
 //        else if((data[newLoc.x][newLoc.y] & AGENT) != 0) {
@@ -74,5 +81,9 @@ public class DistributedTaxiModel extends GridWorldModel {
 
     public Location getGotoLocation(int agent_id) {
         return gotoLocations.get(agent_id);
+    }
+
+    public Location getAgentLocation(int agentId) {
+        return getAgPos(agentId);
     }
 }

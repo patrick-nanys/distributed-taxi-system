@@ -1,4 +1,4 @@
-// Agent cashier in project naatho_ier
+// Agent taxi in project distributed_taxi_system
 
 /* Initial beliefs and rules */
 
@@ -51,16 +51,17 @@ not_busy.
     .abolish(client_waiting_at(C,X,Y)).
 
 +client_waiting_at(C,X,Y)[source(S)] : busy <-
-    .print("Rejecting ", C);
+    //.print("Rejecting ", C);
     .send(S,tell,reject(C,X,Y));
     .abolish(client_waiting_at(C,X,Y)).
 
 +take_client_to(X,Y)[source(C)] <-
-    .kill_agent(C);
-    .print("Picked up ", C);
+    //.kill_agent(C);
+    remove(C);
+    .send("broker", tell, client_picked_up(C));
+    //.print("Picked up ", C);
     !at(X,Y);
-    .print(C, " arrived to destination!");
-    .send("broker", tell, client_delivered(C));
+    //.print(C, " arrived to destination!");
     +not_busy;
     .abolish(busy);
     .abolish(take_client_to(X,Y)).

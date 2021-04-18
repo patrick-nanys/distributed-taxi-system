@@ -1,5 +1,3 @@
-
-
 import jason.asSyntax.ASSyntax;
 import jason.asSyntax.Literal;
 import jason.asSyntax.Structure;
@@ -7,13 +5,16 @@ import jason.asSyntax.Term;
 import jason.environment.TimeSteppedEnvironment;
 import jason.environment.grid.Location;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.logging.Logger;
 
 public class DistributedTaxiEnvironment extends TimeSteppedEnvironment {
     private static Logger logger = Logger.getLogger("distributed_taxi_system.mas2j."+DistributedTaxiEnvironment.class.getName());
     private HashMap<String, Integer> agentIds = new HashMap<String, Integer>();
-
+    private ArrayList<String> placeableClients = new ArrayList<>();
+    private static int callCounter = 0;
+    private int agentCounter = 0;
 
     private DistributedTaxiModel model;
     private DistributedTaxiView view;
@@ -39,6 +40,14 @@ public class DistributedTaxiEnvironment extends TimeSteppedEnvironment {
         private static Literal gotoLiteral(Location loc) {
             return Literal.parseLiteral(String.format("go_to(%d,%d)", loc.x, loc.y));
         }
+
+        private static Literal removeLiteral(String agentName) {
+            return Literal.parseLiteral(String.format("remove(%s)", agentName));
+        }
+
+        private static Literal setupLiteral() {
+            return Literal.parseLiteral(String.format("setup"));
+        }
     }
 
     @Override
@@ -46,33 +55,31 @@ public class DistributedTaxiEnvironment extends TimeSteppedEnvironment {
         super.init(new String[] { "1000" });
 //        TODO took this out
 //        setOverActionsPolicy(OverActionsPolicy.ignoreSecond);
-        setSleep(1000);
+//        setSleep(100);
         int numClient = Integer.parseInt(args[0]);
         int numTaxi = Integer.parseInt(args[1]);
 
         model = new DistributedTaxiModel(numTaxi, numClient);
         view = new DistributedTaxiView(model, this);
         model.setView(view);
-        int counter = 0;
+
+        String agName = "broker";
+        agentIds.put(agName, agentCounter);
+        addPercept(agName, Literals.taxiNumLiteral(model.getNumTaxi()));
+        updatePercepts(agName);
+
         for (int i = 0; i < numTaxi; i++) {
-            String agName = "taxi" + (i+1);
-            agentIds.put(agName, counter);
+            agName = "taxi" + (i+1);
+            agentIds.put(agName, ++agentCounter);
             updatePercepts(agName);
-            counter++;
         }
 
         for (int i = 0; i < numClient; i++) {
-            String agName = "client" + (i+1);
-            agentIds.put(agName, counter);
-            addPercept(agName, Literals.gotoLiteral(model.getGotoLocation(counter)));
+            agName = "client" + (i+1);
+            agentIds.put(agName, ++agentCounter);
+            addPercept(agName, Literals.gotoLiteral(model.getGotoLocation(agentCounter)));
             updatePercepts(agName);
-            counter++;
         }
-
-        String agName = "broker";
-        agentIds.put(agName, counter);
-        addPercept(agName, Literals.taxiNumLiteral(model.getNumTaxi()));
-        updatePercepts(agName);
 
     }
 
@@ -93,7 +100,7 @@ public class DistributedTaxiEnvironment extends TimeSteppedEnvironment {
 
     @Override
     public boolean executeAction(String agName, Structure action) {
-        Integer agentId = agentIds.get(agName);
+        int agentId = agentIds.get(agName);
         boolean successful = false;
         if (action.equals(Literals.MOVE_UP)) {
             successful = model.move(agentId, DistributedTaxiModel.Direction.UP);
@@ -103,7 +110,28 @@ public class DistributedTaxiEnvironment extends TimeSteppedEnvironment {
             successful = model.move(agentId, DistributedTaxiModel.Direction.RIGHT);
         } else if (action.equals(Literals.MOVE_LEFT)) {
             successful = model.move(agentId, DistributedTaxiModel.Direction.LEFT);
+        } else if (action.getFunctor().equals("remove")) {
+            String clientName = String.valueOf(action.getTerm(0));
+            agentId = agentIds.get(clientName);
+            Location agentLocation = model.getAgentLocation(agentId);
+            model.remove(model.AGENT, agentLocation.x, agentLocation.y);
+
+            placeableClients.add(clientName);
+
+            successful = true;
         }
+        callCounter++;
+        if (callCounter % 50 == 0) {
+            if (placeableClients.size() > 0) {
+                String clientToPlace = placeableClients.get(0);
+                placeableClients.remove(0);
+                int clientToPlaceId = agentIds.get(clientToPlace);
+                model.placeAgent(clientToPlaceId);
+                updatePercepts(clientToPlace);
+                addPercept(clientToPlace, Literals.setupLiteral());
+            }
+        }
+//        logger.info(String.format("Action functor is: %s", action.getFunctor()));
 
         updatePercepts(agName);
         return successful;
