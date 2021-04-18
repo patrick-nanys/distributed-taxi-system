@@ -52,7 +52,7 @@ public class DistributedTaxiEnvironment extends TimeSteppedEnvironment {
 
     @Override
     public void init(String[] args) {
-        super.init(new String[] { "1000" });
+        super.init(new String[] { "100" });
 //        TODO took this out
 //        setOverActionsPolicy(OverActionsPolicy.ignoreSecond);
 //        setSleep(100);
@@ -77,7 +77,7 @@ public class DistributedTaxiEnvironment extends TimeSteppedEnvironment {
         for (int i = 0; i < numClient; i++) {
             agName = "client" + (i+1);
             agentIds.put(agName, ++agentCounter);
-            addPercept(agName, Literals.gotoLiteral(model.getGotoLocation(agentCounter)));
+            addPercept(agName, Literals.gotoLiteral(model.getGoodLocation()));
             updatePercepts(agName);
         }
 
@@ -112,10 +112,9 @@ public class DistributedTaxiEnvironment extends TimeSteppedEnvironment {
             successful = model.move(agentId, DistributedTaxiModel.Direction.LEFT);
         } else if (action.getFunctor().equals("remove")) {
             String clientName = String.valueOf(action.getTerm(0));
-            agentId = agentIds.get(clientName);
-            Location agentLocation = model.getAgentLocation(agentId);
-            model.remove(model.AGENT, agentLocation.x, agentLocation.y);
+            int clientId = agentIds.get(clientName);
 
+            model.removeAgent(clientId);
             placeableClients.add(clientName);
 
             successful = true;
@@ -126,8 +125,11 @@ public class DistributedTaxiEnvironment extends TimeSteppedEnvironment {
                 String clientToPlace = placeableClients.get(0);
                 placeableClients.remove(0);
                 int clientToPlaceId = agentIds.get(clientToPlace);
+
+                clearPercepts(clientToPlace);
                 model.placeAgent(clientToPlaceId);
                 updatePercepts(clientToPlace);
+                addPercept(clientToPlace, Literals.gotoLiteral(model.getGoodLocation()));
                 addPercept(clientToPlace, Literals.setupLiteral());
             }
         }

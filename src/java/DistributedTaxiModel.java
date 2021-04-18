@@ -10,7 +10,7 @@ public class DistributedTaxiModel extends GridWorldModel {
     public static final int GSize = 30;
     private int numTaxi;
     private int numClient;
-    private HashMap<Integer, Location> gotoLocations = new HashMap<Integer, Location>();
+    private boolean takenPositions[][] = new boolean[GSize][GSize];
     private HashMap<Integer, Location> prevLocations = new HashMap<Integer, Location>();
 
     protected DistributedTaxiModel(int numTaxi, int numClient) {
@@ -20,19 +20,38 @@ public class DistributedTaxiModel extends GridWorldModel {
 
         // set broker position
         setAgPos(0, 0, 0);
+        takenPositions[0][0] = true;
 
         // set taxi and client positions
-        for(int i = 1; i < 1 + this.numTaxi + this.numClient; i++) {
-            setAgPos(i, getFreePos());
-        }
-        // set go to positions
-        for(int i = 1 + this.numTaxi; i < 1 + this.numTaxi + this.numClient; i++) {
-            gotoLocations.put(i, getFreePos());
-        }
+        for(int i = 1; i < 1 + this.numTaxi + this.numClient; i++)
+            placeAgent(i);
     }
 
     public void placeAgent(int agentId) {
-        setAgPos(agentId, getFreePos());
+        setAgPos(agentId, getGoodLocation());
+    }
+
+    public void removeAgent(int agentId) {
+        Location agentLocation = getAgPos(agentId);
+        remove(AGENT, agentLocation.x, agentLocation.y);
+        takenPositions[agentLocation.x][agentLocation.y] = false;
+    }
+
+    public Location getGoodLocation() {
+        Location location = getFreePos();
+        while (takenInColumnOrRow(location.x, location.y)) {
+            location = getFreePos();
+        }
+        takenPositions[location.x][location.y] = true;
+        return location;
+    }
+
+    private boolean takenInColumnOrRow(int x, int y) {
+        for (int i = 0; i < GSize; i++)
+            if (takenPositions[x][i] || takenPositions[i][y])
+                return true;
+
+        return false;
     }
 
     enum Direction {
@@ -67,9 +86,11 @@ public class DistributedTaxiModel extends GridWorldModel {
         if(newLoc == null || !inGrid(newLoc) || !isFree(newLoc)) {
             return false;
         }
-//        else if((data[newLoc.x][newLoc.y] & AGENT) != 0) {
-//            return false;
-//        }
+
+        // update taken positions
+        takenPositions[location.x][location.y] = false;
+        takenPositions[newLoc.x][newLoc.y] = true;
+
         prevLocations.put(agentId, location);
         setAgPos(agentId, newLoc);
         return true;
@@ -77,10 +98,6 @@ public class DistributedTaxiModel extends GridWorldModel {
 
     public Location getPrevAgentLocation(int agent_id) {
         return prevLocations.get(agent_id);
-    }
-
-    public Location getGotoLocation(int agent_id) {
-        return gotoLocations.get(agent_id);
     }
 
     public Location getAgentLocation(int agentId) {

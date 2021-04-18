@@ -23,6 +23,7 @@
 +call_again <-
     .print("Waiting");
     .wait(1000);
+    .abolish(call_again);
     !call_for_taxi.
 
 +where_to[source(S)] <-
