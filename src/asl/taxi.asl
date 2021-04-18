@@ -32,10 +32,12 @@ not_busy.
 +client_called_at(C,X,Y)[source(S)] : not_busy <-
     ?at(X0,Y0);
     .send(S,tell,client_cost(math.abs(X-X0)+math.abs(Y-Y0),C));
+    //.print("not busy client called: ", C);
     .abolish(client_called_at(C,X,Y)).
 
 +client_called_at(C,X,Y)[source(S)] : busy <-
     .send(S,tell,client_cost(10000,C));
+    //.print("busy client called: ", C);
     .abolish(client_called_at(C,X,Y)).
 
 +client_waiting_at(C,X,Y) : not_busy <-

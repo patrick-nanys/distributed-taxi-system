@@ -7,7 +7,7 @@ import java.util.logging.Logger;
 
 public class DistributedTaxiModel extends GridWorldModel {
 //    public static final int CUST  = 16;
-    public static final int GSize = 30;
+    public static final int GSize = 60;
     private int numTaxi;
     private int numClient;
     private boolean takenPositions[][] = new boolean[GSize][GSize];
@@ -23,18 +23,34 @@ public class DistributedTaxiModel extends GridWorldModel {
         takenPositions[0][0] = true;
 
         // set taxi and client positions
-        for(int i = 1; i < 1 + this.numTaxi + this.numClient; i++)
-            placeAgent(i);
+        for(int i = 1; i < 1 + this.numTaxi; i++)
+            placeTaxi(i);
+        for(int i = 1 + this.numTaxi; i < 1 + this.numTaxi + this.numClient; i++)
+            placeClient(i);
     }
 
-    public void placeAgent(int agentId) {
+    public void placeTaxi(int agentId) {
         setAgPos(agentId, getGoodLocation());
     }
 
-    public void removeAgent(int agentId) {
+    public void placeClient(int agentId) {
+        setAgPos(agentId, getGoodClientLocation());
+    }
+
+    public void removeClient(int agentId, int clientId) {
         Location agentLocation = getAgPos(agentId);
-        remove(AGENT, agentLocation.x, agentLocation.y);
-        takenPositions[agentLocation.x][agentLocation.y] = false;
+        Location clientLocation = getAgPos(clientId);
+        remove(AGENT, clientLocation.x, clientLocation.y);
+
+        // reset taken position of client that has been removed
+        takenPositions[clientLocation.x][clientLocation.y] = false;
+        if (inGrid(clientLocation.x, clientLocation.y-1))
+            takenPositions[clientLocation.x][clientLocation.y-1] = false;
+        if (inGrid(clientLocation.x, clientLocation.y+1))
+            takenPositions[clientLocation.x][clientLocation.y+1] = false;
+
+        // set taken position for taxi that removed the client
+        takenPositions[agentLocation.x][agentLocation.y] = true;
     }
 
     public Location getGoodLocation() {
@@ -46,10 +62,51 @@ public class DistributedTaxiModel extends GridWorldModel {
         return location;
     }
 
+    public Location getGoodClientLocation() {
+        Location l = getFreePos();
+        while (!goodLocationForClient(l)) {
+            l = getFreePos();
+        }
+
+//        System.out.println("Taken positions");
+//        for (int y = 0; y < GSize; y++)
+//        {
+//            for (int x = 0; x < GSize; x++)
+//            {
+////                System.out.print(x + "," + y + " ");
+//                String out = takenPositions[x][y] ? "1" : "0";
+//                System.out.print(out + " ");
+//            }
+//            System.out.println();
+//        }
+//        System.out.println("Going to take: " + l.x + ", " + l.y + "as client");
+
+        takenPositions[l.x][l.y] = true;
+        if (inGrid(l.x, l.y-1))
+            takenPositions[l.x][l.y-1] = true;
+        if (inGrid(l.x, l.y+1))
+            takenPositions[l.x][l.y+1] = true;
+
+        return l;
+    }
+
+    private boolean goodLocationForClient(Location l) {
+        if (takenInColumnOrRow(l.x, l.y))
+            return false;
+        if (inGrid(l.x, l.y-1) && takenInColumnOrRow(l.x, l.y-1))
+            return false;
+        if (inGrid(l.x, l.y+1) && takenInColumnOrRow(l.x, l.y+1))
+            return false;
+
+        return true;
+    }
+
     private boolean takenInColumnOrRow(int x, int y) {
-        for (int i = 0; i < GSize; i++)
-            if (takenPositions[x][i] || takenPositions[i][y])
+        for (int i = 0; i < GSize; i++) {
+            if (takenPositions[x][i] || takenPositions[i][y]) {
                 return true;
+            }
+        }
 
         return false;
     }

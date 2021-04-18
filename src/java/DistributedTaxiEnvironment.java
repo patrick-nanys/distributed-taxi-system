@@ -55,7 +55,6 @@ public class DistributedTaxiEnvironment extends TimeSteppedEnvironment {
         super.init(new String[] { "100" });
 //        TODO took this out
 //        setOverActionsPolicy(OverActionsPolicy.ignoreSecond);
-//        setSleep(100);
         int numClient = Integer.parseInt(args[0]);
         int numTaxi = Integer.parseInt(args[1]);
 
@@ -94,7 +93,7 @@ public class DistributedTaxiEnvironment extends TimeSteppedEnvironment {
 //            logger.info(String.format("Removed at percept for agent: %s", agentName));
             removePercept(agentName, prevPositionLiteral);
         }
-//        logger.info(String.format("Added at percept for agent: %s", agentName));
+//        logger.info(String.format("Added at percept for agent: %s (%d,%d)", agentName, agentPosition.x, agentPosition.y));
         addPercept(agentName, Literals.atLiteral(agentPosition));
     }
 
@@ -114,7 +113,7 @@ public class DistributedTaxiEnvironment extends TimeSteppedEnvironment {
             String clientName = String.valueOf(action.getTerm(0));
             int clientId = agentIds.get(clientName);
 
-            model.removeAgent(clientId);
+            model.removeClient(agentId, clientId);
             placeableClients.add(clientName);
 
             successful = true;
@@ -127,7 +126,8 @@ public class DistributedTaxiEnvironment extends TimeSteppedEnvironment {
                 int clientToPlaceId = agentIds.get(clientToPlace);
 
                 clearPercepts(clientToPlace);
-                model.placeAgent(clientToPlaceId);
+//                logger.info(String.format("Cleared all percepts for agent: %s", clientToPlace));
+                model.placeClient(clientToPlaceId);
                 updatePercepts(clientToPlace);
                 addPercept(clientToPlace, Literals.gotoLiteral(model.getGoodLocation()));
                 addPercept(clientToPlace, Literals.setupLiteral());
