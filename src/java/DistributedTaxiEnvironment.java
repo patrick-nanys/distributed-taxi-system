@@ -52,7 +52,7 @@ public class DistributedTaxiEnvironment extends TimeSteppedEnvironment {
 
     @Override
     public void init(String[] args) {
-        super.init(new String[] { "100" });
+        super.init(new String[] { "75" });
 //        TODO took this out
 //        setOverActionsPolicy(OverActionsPolicy.ignoreSecond);
         int numClient = Integer.parseInt(args[0]);
@@ -119,7 +119,7 @@ public class DistributedTaxiEnvironment extends TimeSteppedEnvironment {
             successful = true;
         }
         callCounter++;
-        if (callCounter % 50 == 0) {
+        if (callCounter % 85 == 0) {
             if (placeableClients.size() > 0) {
                 String clientToPlace = placeableClients.get(0);
                 placeableClients.remove(0);

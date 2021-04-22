@@ -18,6 +18,7 @@
 +!call_for_taxi <-
     //.print("Calling for taxi");
     ?at(X,Y);
+    .abolish(client_called_at(_,_,_));
     .send("broker", tell, client_called_at(X,Y)).
 
 +call_again <-
@@ -29,6 +30,7 @@
     !call_for_taxi.
 
 +where_to[source(S)] <-
+    //.print("Where to");
     ?go_to(X,Y);
     .send(S, tell, take_client_to(X,Y));
     .abolish(where_to).

@@ -141,6 +141,9 @@ public class DistributedTaxiModel extends GridWorldModel {
                 break;
         }
         if(newLoc == null || !inGrid(newLoc) || !isFree(newLoc)) {
+//            System.out.printf("newLoc is null %b%n", newLoc == null);
+//            System.out.printf("newLoc !inGrid %b%n", !inGrid(newLoc));
+//            System.out.printf("newLoc !isFree %b%n", !isFree(newLoc));
             return false;
         }
 

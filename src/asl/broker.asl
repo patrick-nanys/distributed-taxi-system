@@ -31,9 +31,13 @@
  	}.
 
 +reject(C,X,Y) <-
+    //.print(C, " got rejected");
     .broadcast(tell, client_called_at(C,X,Y));
     .abolish(reject(C,X,Y)).
 
-+client_picked_up(C) <-
++client_picked_up(C)[source(S)] <-
+    //.print(C, "picked up");
     .abolish(client_called_at(X,Y)[source(C)]);
-    .abolish(client_delivered(C)).
+    .abolish(client_delivered(C));
+    .abolish(client_picked_up(C));
+    .send(S, tell, pickup_ack(C)).
