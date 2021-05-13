@@ -6,7 +6,6 @@ import java.util.Random;
 import java.util.logging.Logger;
 
 public class DistributedTaxiModel extends GridWorldModel {
-//    public static final int CUST  = 16;
     public static final int GSize = 60;
     private int numTaxi;
     private int numClient;
@@ -68,19 +67,6 @@ public class DistributedTaxiModel extends GridWorldModel {
             l = getFreePos();
         }
 
-//        System.out.println("Taken positions");
-//        for (int y = 0; y < GSize; y++)
-//        {
-//            for (int x = 0; x < GSize; x++)
-//            {
-////                System.out.print(x + "," + y + " ");
-//                String out = takenPositions[x][y] ? "1" : "0";
-//                System.out.print(out + " ");
-//            }
-//            System.out.println();
-//        }
-//        System.out.println("Going to take: " + l.x + ", " + l.y + "as client");
-
         takenPositions[l.x][l.y] = true;
         if (inGrid(l.x, l.y-1))
             takenPositions[l.x][l.y-1] = true;
@@ -141,9 +127,6 @@ public class DistributedTaxiModel extends GridWorldModel {
                 break;
         }
         if(newLoc == null || !inGrid(newLoc) || !isFree(newLoc)) {
-//            System.out.printf("newLoc is null %b%n", newLoc == null);
-//            System.out.printf("newLoc !inGrid %b%n", !inGrid(newLoc));
-//            System.out.printf("newLoc !isFree %b%n", !isFree(newLoc));
             return false;
         }
 

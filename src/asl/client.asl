@@ -11,18 +11,16 @@
 /* Plans */
 
 +setup <-
-    //.print("Setting up client");
     !call_for_taxi;
     .abolish(setup).
 
 +!call_for_taxi <-
-    //.print("Calling for taxi");
     ?at(X,Y);
     .abolish(client_called_at(_,_,_));
     .send("broker", tell, client_called_at(X,Y)).
 
 +call_again <-
-    //.print("Waiting");
+    // this is better than just waiting for three seconds
     .wait(1000);
     .wait(1000);
     .wait(1000);
@@ -30,7 +28,6 @@
     !call_for_taxi.
 
 +where_to[source(S)] <-
-    //.print("Where to");
     ?go_to(X,Y);
     .send(S, tell, take_client_to(X,Y));
     .abolish(where_to).

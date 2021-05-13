@@ -8,7 +8,6 @@ public class DistributedTaxiView extends GridWorldView {
 
     DistributedTaxiModel model;
 
-    // TODO check if env var is needed
     public DistributedTaxiView(DistributedTaxiModel model, final DistributedTaxiEnvironment env) {
         super(model, "Distributed taxi system", 1200);
         this.model = model;
